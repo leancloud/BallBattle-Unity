@@ -7,9 +7,11 @@ public class BallController : MonoBehaviour
 {
     public Transform cameraTrans;
 
+    Ball ball;
     Vector3 direction;
     
     void Start() {
+        ball = GetComponent<Ball>();
         direction = Vector3.zero;
     }
 
@@ -18,11 +20,13 @@ public class BallController : MonoBehaviour
         var speed = 2.0f;
         var delta = direction * speed * Time.deltaTime;
         var position = transform.localPosition + delta;
-        // TODO 判断边界
-
-        transform.localPosition = position;
-        cameraTrans.localPosition = new Vector3(position.x, position.y, -10);
-
+        // 判断边界
+        var newPosition = new Vector2(
+            Math.Min(Math.Max(position.x, Constants.LEFT), Constants.RIGHT), 
+            Math.Min(Math.Max(position.y, Constants.BOTTOM), Constants.TOP));
+        transform.localPosition = newPosition;
+        cameraTrans.localPosition = new Vector3(newPosition.x, newPosition.y, -10);
+        // 监听输入操作
         if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow)) {
             var dir = direction;
             dir.y = 1;
@@ -59,15 +63,16 @@ public class BallController : MonoBehaviour
         float dx = direction.x;
         float dy = direction.y;
         var client = LeanCloudUtils.GetClient();
-        var props = new Dictionary<string, object> {
-            ["move"] = new Dictionary<string, object> {
-                { "p", ToDict(transform.localPosition) },
-                { "d", ToDict(direction) },
-                { "t", (long)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalMilliseconds }
-            }
+        var move = new Dictionary<string, object> {
+            { "p", ToDict(transform.localPosition) },
+            { "d", ToDict(direction) },
+            { "t", BattleHelper.Now }
         };
-        // TODO 同步移动信息
-
+        var props = new Dictionary<string, object> {
+            { "move", move }
+        };
+        // 同步移动信息
+        client.Player.SetCustomProperties(props);
     }
 
     Dictionary<string, object> ToDict(Vector2 vec) {

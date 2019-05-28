@@ -9,13 +9,17 @@ public class PlayerInfoItem : MonoBehaviour
     public Text nameText;
     public Text weightText;
 
-    static string ToReadableWeight(int weight) { 
-        if (weight < 1000) {
-            return weight.ToString();
+    public void SetInfo(int rank, string name, int weight, bool isLocal) {
+        var color = Color.white;
+        if (isLocal) {
+            color = Color.yellow;
         }
-        if (weight < 1000000) {
-            return $"{weight / 1000}k";
-        }
-        return $"{weight / 1000 / 1000}m";
+        rankText.color = color;
+        nameText.color = color;
+        weightText.color = color;
+
+        rankText.text = rank.ToString();
+        nameText.text = name;
+        weightText.text = BattleHelper.ToReadableWeight(weight);
     }
 }

@@ -11,9 +11,10 @@ GameObject:
   - component: {fileID: 332543613525525902}
   - component: {fileID: 1401865583462812660}
   - component: {fileID: 8260224735871591054}
+  - component: {fileID: 7656520223515475790}
   m_Layer: 0
   m_Name: HexagonFood
-  m_TagString: Untagged
+  m_TagString: food
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -90,7 +91,7 @@ PolygonCollider2D:
   m_Enabled: 1
   m_Density: 1
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
@@ -105,10 +106,21 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: -0.06, y: 0.08}
-      - {x: -0.089999996, y: 0.04}
-      - {x: -0.089999996, y: -0.06}
-      - {x: -0.08, y: -0.08}
-      - {x: 0.089999996, y: -0.08}
-      - {x: 0.089999996, y: 0.03}
-      - {x: 0.06, y: 0.08}
+    - - {x: 0.039573085, y: 0.06479801}
+      - {x: -0.039073315, y: 0.0650833}
+      - {x: -0.080118716, y: -0.0007122308}
+      - {x: -0.039714683, y: -0.076199524}
+      - {x: 0.03375259, y: -0.07619947}
+      - {x: 0.08011866, y: -0.0034444258}
+--- !u!114 &7656520223515475790
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1594901292768048099}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f377014023f1c4261b67d89a09862a25, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

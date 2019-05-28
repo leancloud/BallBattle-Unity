@@ -13,6 +13,8 @@ public class Menu : MonoBehaviour
         LeanCloud.Play.Logger.LogDelegate = (level, info) => {
             Debug.Log($"[{level}] {info}");
         };
+        var canvas = GetComponent<Canvas>();
+        Debug.Log($"canvas camera: {canvas.worldCamera}");
     }
 
     public async void OnJoinBtnClicked() {
