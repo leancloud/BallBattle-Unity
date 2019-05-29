@@ -95,6 +95,7 @@ namespace LeanCloud.Play {
         void Send(string msg) {
             Logger.Debug("=> {0} at {1}", msg, Thread.CurrentThread.ManagedThreadId);
             ws.Send(msg);
+            Ping();
         }
 
         internal void Close() {
@@ -112,7 +113,6 @@ namespace LeanCloud.Play {
         // Websocket 事件
         void OnWebSocketMessage(object sender, MessageEventArgs eventArgs) {
             Logger.Debug("<= {0}", eventArgs.Data);
-            Ping();
             Pong();
             if (PING.Equals(eventArgs.Data)) {
                 return;
@@ -121,7 +121,7 @@ namespace LeanCloud.Play {
             if (isMessageQueueRunning) {
                 HandleMessage(message);
             } else {
-                Logger.Debug("delayed ...");
+                Logger.Debug($"delay: {message.ToJson()}");
                 lock (messageQueue) {
                     messageQueue.Enqueue(message);
                 }
@@ -129,6 +129,7 @@ namespace LeanCloud.Play {
         }
 
         void HandleMessage(Message message) {
+            Logger.Debug($"handle: {message.ToJson()}");
             if (message.HasI) {
                 TaskCompletionSource<Message> tcs = null;
                 lock (requests) {

@@ -29,14 +29,12 @@ public class UI : MonoBehaviour
         ballInfo.ball = ball;
 
         NewPlayerInfoItem();
-        UpdateList();
     }
 
     public void RemovePlayerInfo() {
         var playerInfoItem = playerInfoList[0];
         playerInfoList.RemoveAt(0);
         Destroy(playerInfoItem.gameObject);
-        UpdateList();
     }
 
     public void UpdateList() {

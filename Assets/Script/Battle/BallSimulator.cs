@@ -16,23 +16,26 @@ public class BallSimulator : MonoBehaviour {
 
     void Update() {
         if (ball.Player.CustomProperties.TryGetValue("move", out object m)) {
-            var move = m as Dictionary<string, object>;
+            if (!(m is Dictionary<string, object> move)) {
+                return;
+            }
+            // 计算当前位置
             var now = BattleHelper.Now;
             var speed = ball.Speed;
-            var delta = now - long.Parse(move["t"].ToString());
+            var delta = (now - long.Parse(move["t"].ToString())) / 1000.0f;
             var pos = move["p"] as Dictionary<string, object>;
-            var start = new Vector2((float)pos["x"], (float)pos["y"]);
+            var start = new Vector2(float.Parse(pos["x"].ToString()), float.Parse(pos["y"].ToString()));
             var dir = move["d"] as Dictionary<string, object>;
-            var direction = new Vector2((float)dir["x"], (float)dir["y"]);
-            var end = start + direction * speed * Time.deltaTime;
+            var direction = new Vector2(float.Parse(dir["x"].ToString()), float.Parse(dir["y"].ToString()));
+            var end = start + direction.normalized * speed * delta;
+            // 计算模拟运动
             var curPos = new Vector2(transform.localPosition.x, transform.localPosition.y);
             var mag = (end - curPos).magnitude;
             if (mag < Constants.DISTANCE_MAG) {
                 return;
             }
-            direction = (end - curPos).normalized;
-            var posDelta = direction * speed * Time.deltaTime;
-            var newPos = curPos + posDelta;
+            direction = end - curPos;
+            var newPos = curPos + direction.normalized * speed * Time.deltaTime;
             newPos = new Vector2(
                 Mathf.Min(Mathf.Max(newPos.x, Constants.LEFT), Constants.RIGHT),
                 Mathf.Min(Mathf.Max(newPos.y, Constants.BOTTOM), Constants.TOP)

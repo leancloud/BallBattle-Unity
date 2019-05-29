@@ -42,6 +42,13 @@ public class Battle : MonoBehaviour
         client.ResumeMessageQueue();
     }
 
+    void OnDestroy() {
+        var client = LeanCloudUtils.GetClient();
+        client.OnMasterSwitched -= Client_OnMasterSwitched;
+        client.OnCustomEvent -= Client_OnCustomEvent;
+        client.OnPlayerRoomLeft -= Client_OnPlayerRoomLeft;
+    }
+
     void Client_OnMasterSwitched(Player newMaster) {
         if (newMaster.IsLocal) {
             // 当前客户端被设置为 Master
@@ -76,8 +83,13 @@ public class Battle : MonoBehaviour
     }
 
     void Client_OnPlayerRoomLeft(Player player) {
-        // TODO 清理工作
-
+        // 清理工作
+        var ball = IdToBalls[player.ActorId];
+        if (ball != null) {
+            Destroy(ball.gameObject);
+            ui.RemovePlayerInfo();
+            ui.UpdateList();
+        }
     }
 
     void OnBornEvent(Dictionary<string, object> eventData) {
@@ -96,6 +108,7 @@ public class Battle : MonoBehaviour
                 ball.gameObject.AddComponent<BallSimulator>();
             }
         }
+        ui.UpdateList();
         // 增加食物数据
         var foods = eventData["foods"] as List<object>;
         SpawnFoods(foods);
@@ -108,6 +121,7 @@ public class Battle : MonoBehaviour
         // 实例化一个新球
         var ball = NewBall(player);
         ball.gameObject.AddComponent<BallSimulator>();
+        ui.UpdateList();
     }
 
     void OnEatEvent(Dictionary<string, object> eventData) {
@@ -123,20 +137,19 @@ public class Battle : MonoBehaviour
     }
 
     void OnKillEvent(Dictionary<string, object> eventData) {
+        var winnerId = int.Parse(eventData["winnerId"].ToString());
+        var winner = IdToBalls[winnerId];
+        winner.Win();
         var loserId = int.Parse(eventData["loserId"].ToString());
-        var ball = IdToBalls[loserId];
-        ball.gameObject.SetActive(false);
+        var loser = IdToBalls[loserId];
+        loser.Lose();
         ui.UpdateList();
     }
 
     void OnRebornEvent(Dictionary<string, object> eventData) {
         var playerId = int.Parse(eventData["playerId"].ToString());
         var ball = IdToBalls[playerId];
-        ball.gameObject.SetActive(true);
-        var pos = ball.Player.CustomProperties["pos"] as Dictionary<string, object>;
-        var x = float.Parse(pos["x"].ToString());
-        var y = float.Parse(pos["y"].ToString());
-        ball.transform.localPosition = new Vector2(x, y);
+        ball.Reborn();
         ui.UpdateList();
     }
 

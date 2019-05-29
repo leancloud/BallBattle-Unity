@@ -2,43 +2,62 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace LeanCloud.Play {
-    internal class PlayContext {
-        readonly Queue<Action> actions;
-        readonly AutoResetEvent are;
+    internal class PlayContext : MonoBehaviour {
+        Queue<Action> runningActions;
+        Queue<Action> waitingActions;
 
-        internal bool IsRunning {
-            get; set;
+        bool running;
+
+        void Awake() {
+            runningActions = new Queue<Action>();
+            waitingActions = new Queue<Action>();
+            running = true;
         }
 
-        internal PlayContext() {
-            actions = new Queue<Action>();
-            are = new AutoResetEvent(false);
-            Task.Run(() => {
-                IsRunning = true;
-                while (IsRunning) {
-                    if (actions.Count > 0) {
-                        Action action = null;
-                        lock (actions) {
-                            action = actions.Dequeue();
+        void Update() {
+            if (!running) {
+                return;
+            }
+            if (waitingActions.Count > 0) { 
+                lock (waitingActions) {
+                    var temp = runningActions;
+                    runningActions = waitingActions;
+                    waitingActions = temp;
+                }
+                while (runningActions.Count > 0) {
+                    var action = runningActions.Dequeue();
+                    action.Invoke();
+                    if (!running) { 
+                        lock (waitingActions) {
+                            var temp = waitingActions;
+                            waitingActions = runningActions;
+                            foreach (var act in temp) {
+                                waitingActions.Enqueue(act);
+                            }
                         }
-                        action?.Invoke();
-                    } else {
-                        are.WaitOne();
                     }
                 }
-            });
+            }
         }
 
         internal void Post(Action action) { 
             if (action == null) {
                 return;
             }
-            lock (actions) {
-                actions.Enqueue(action);
-                are.Set();
+            lock (waitingActions) {
+                waitingActions.Enqueue(action);
             }
+        }
+
+        internal void Pause() {
+            running = false;
+        }
+
+        internal void Resume() {
+            running = true;
         }
     }
 }

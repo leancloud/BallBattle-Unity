@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace LeanCloud.Play {
     public class Client {
@@ -20,7 +21,7 @@ namespace LeanCloud.Play {
         public event Action OnDisconnected;
         public event Action<int, string> OnError;
 
-        readonly SynchronizationContext context;
+        readonly PlayContext context;
 
         public string AppId {
             get; private set;
@@ -68,7 +69,10 @@ namespace LeanCloud.Play {
 
             state = PlayState.INIT;
             Logger.Debug("start at {0}", Thread.CurrentThread.ManagedThreadId);
-            context = SynchronizationContext.Current ?? new SynchronizationContext();
+
+            var playGO = new GameObject("LeanCloud.Play");
+            UnityEngine.Object.DontDestroyOnLoad(playGO);
+            context = playGO.AddComponent<PlayContext>();
 
             playRouter = new PlayRouter(appId, playServer);
             lobbyRouter = new LobbyRouter(appId, false, null);
@@ -358,7 +362,7 @@ namespace LeanCloud.Play {
         }
 
         void OnLobbyConnMessage(Message msg) {
-            context.Post(_ => { 
+            context.Post(() => { 
                 switch (msg.Cmd) {
                     case "lobby":
                         switch (msg.Op) {
@@ -383,7 +387,7 @@ namespace LeanCloud.Play {
                         HandleUnknownMsg(msg);
                         break;
                 }
-            }, msg);
+            });
         }
 
         void HandleRoomListMsg(Message msg) {
@@ -416,14 +420,14 @@ namespace LeanCloud.Play {
         }
 
         void OnLobbyConnClose(int code, string reason) {
-            context.Post(_ => {
+            context.Post(() => {
                 state = PlayState.DISCONNECT;
                 OnDisconnected?.Invoke();
-            }, null);
+            });
         }
 
         void OnGameConnMessage(Message msg) {
-            context.Post(_ => {
+            context.Post(() => {
                 switch (msg.Cmd) {
                     case "conv":
                         switch (msg.Op) {
@@ -474,14 +478,14 @@ namespace LeanCloud.Play {
                         HandleUnknownMsg(msg);
                         break;
                 }
-            }, null);
+            });
         }   
 
         void OnGameConnClose(int code, string reason) {
-            context.Post(_ => {
+            context.Post(() => {
                 state = PlayState.DISCONNECT;
                 OnDisconnected?.Invoke();
-            }, null);
+            });
         }
 
         void HandlePlayerJoinedRoom(Message msg) { 
@@ -626,7 +630,7 @@ namespace LeanCloud.Play {
             state = PlayState.GAME_TO_LOBBY;
             // 建立连接
             ConnectLobby().ContinueWith(t => {
-                context.Post(_ => {
+                context.Post(() => {
                     if (t.IsFaulted) {
                         state = PlayState.INIT;
                         throw t.Exception.InnerException;
@@ -640,7 +644,7 @@ namespace LeanCloud.Play {
                         reason = reasonObj.ToString();
                     }
                     OnRoomKicked?.Invoke(code, reason);
-                }, null);
+                });
             });
         }
 

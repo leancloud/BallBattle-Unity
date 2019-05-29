@@ -11,7 +11,7 @@ public class Ball : MonoBehaviour
 
     public float Speed { 
         get {
-            return Mathf.Max(Constants.MIN_SPEED, Constants.SPEED_FACTOR / Weight);
+            return 2.0f;
         }
     }
 
@@ -25,12 +25,21 @@ public class Ball : MonoBehaviour
         UpdateScale();
     }
 
+    public void Win() {
+        UpdateScale();
+    }
+
+    public void Lose() {
+        gameObject.SetActive(false);
+    }
+
     public void Reborn() {
         UpdateScale();
         var pos = Player.CustomProperties["pos"] as Dictionary<string, object>;
         var x = float.Parse(pos["x"].ToString());
         var y = float.Parse(pos["y"].ToString());
         transform.localPosition = new Vector2(x, y);
+        gameObject.SetActive(true);
     }
 
     void UpdateScale() {
