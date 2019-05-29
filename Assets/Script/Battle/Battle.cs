@@ -87,7 +87,7 @@ public class Battle : MonoBehaviour
         var ball = IdToBalls[player.ActorId];
         if (ball != null) {
             Destroy(ball.gameObject);
-            ui.RemovePlayerInfo();
+            ui.RemovePlayerInfo(ball);
             ui.UpdateList();
         }
     }
@@ -157,7 +157,7 @@ public class Battle : MonoBehaviour
         var playerId = int.Parse(eventData["playerId"].ToString());
         var ball = IdToBalls[playerId];
         Destroy(ball.gameObject);
-        ui.RemovePlayerInfo();
+        ui.RemovePlayerInfo(ball);
     }
 
     void OnSpawnFoodEvent(Dictionary<string, object> eventData) {

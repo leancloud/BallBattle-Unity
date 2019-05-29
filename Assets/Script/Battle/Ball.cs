@@ -9,6 +9,12 @@ public class Ball : MonoBehaviour
         get; set;
     }
 
+    public int Id { 
+        get {
+            return Player.ActorId;
+        }
+    }
+
     public float Speed { 
         get {
             return 2.0f;

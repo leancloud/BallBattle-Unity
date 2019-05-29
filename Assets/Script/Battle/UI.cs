@@ -15,10 +15,12 @@ public class UI : MonoBehaviour
 
     int duration;
     List<PlayerInfoItem> playerInfoList;
+    Dictionary<int, BallInfo> ballInfoDict;
 
     public void Init() {
         var client = LeanCloudUtils.GetClient();
         playerInfoList = new List<PlayerInfoItem>();
+        ballInfoDict = new Dictionary<int, BallInfo>();
         StartCoroutine(Tick());
     }
 
@@ -27,14 +29,19 @@ public class UI : MonoBehaviour
         ballInfoGO.transform.parent = transform;
         var ballInfo = ballInfoGO.GetComponent<BallInfo>();
         ballInfo.ball = ball;
+        ballInfoDict.Add(ball.Id, ballInfo);
 
         NewPlayerInfoItem();
     }
 
-    public void RemovePlayerInfo() {
+    public void RemovePlayerInfo(Ball ball) {
         var playerInfoItem = playerInfoList[0];
         playerInfoList.RemoveAt(0);
         Destroy(playerInfoItem.gameObject);
+
+        var ballInfo = ballInfoDict[ball.Id];
+        ballInfoDict.Remove(ball.Id);
+        Destroy(ballInfo.gameObject);
     }
 
     public void UpdateList() {
