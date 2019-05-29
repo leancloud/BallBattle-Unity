@@ -79,29 +79,22 @@ public class BallController : MonoBehaviour
 
     void SynchMove() {
         var client = LeanCloudUtils.GetClient();
-        if (horizontal == 0 && vertical == 0) {
-            var props = new Dictionary<string, object> {
-                { "move", null }
-            };
-            client.Player.SetCustomProperties(props);
-        } else {
-            var pos = new Dictionary<string, object> {
+        var pos = new Dictionary<string, object> {
                 { "x", transform.localPosition.x },
                 { "y", transform.localPosition.y }
             };
-            var dir = new Dictionary<string, object> {
+        var dir = new Dictionary<string, object> {
                 { "x", horizontal },
                 { "y", vertical }
             };
-            var move = new Dictionary<string, object> {
+        var move = new Dictionary<string, object> {
                 { "p", pos },
                 { "d", dir },
                 { "t", BattleHelper.Now }
             };
-            var props = new Dictionary<string, object> {
+        var props = new Dictionary<string, object> {
                 { "move", move }
             };
-            client.Player.SetCustomProperties(props);
-        }
+        client.Player.SetCustomProperties(props);
     }
 }
