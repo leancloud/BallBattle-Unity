@@ -51,28 +51,20 @@ public class BallController : MonoBehaviour
             horizontal = 1;
             SynchMove();
         }
-        if (Input.GetKeyUp(KeyCode.W) || Input.GetKeyUp(KeyCode.UpArrow)) {
-            if (vertical == 1) {
-                vertical = 0;
-            }
+        if (Input.GetKeyUp(KeyCode.W) || Input.GetKeyUp(KeyCode.UpArrow) && vertical == 1) {
+            vertical = 0;
             SynchMove();
         }
-        if (Input.GetKeyUp(KeyCode.S) || Input.GetKeyUp(KeyCode.DownArrow)) { 
-            if (vertical == -1) {
-                vertical = 0;
-            }
+        if (Input.GetKeyUp(KeyCode.S) || Input.GetKeyUp(KeyCode.DownArrow) && vertical == -1) {
+            vertical = 0;
             SynchMove();
         }
-        if (Input.GetKeyUp(KeyCode.A) || Input.GetKeyUp(KeyCode.LeftArrow)) { 
-            if (horizontal == -1) {
-                horizontal = 0;
-            }
+        if (Input.GetKeyUp(KeyCode.A) || Input.GetKeyUp(KeyCode.LeftArrow) && horizontal == -1) {
+            horizontal = 0;
             SynchMove();
         }
-        if (Input.GetKeyUp(KeyCode.D) || Input.GetKeyUp(KeyCode.RightArrow)) {
-            if (horizontal == 1) {
-                horizontal = 0;
-            }
+        if (Input.GetKeyUp(KeyCode.D) || Input.GetKeyUp(KeyCode.RightArrow) && horizontal == 1) {
+            horizontal = 0;
             SynchMove();
         }
     }
