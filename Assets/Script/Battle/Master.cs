@@ -146,7 +146,7 @@ public class Master : MonoBehaviour {
             { "foods", foods }
         };
         client.SendEvent(Constants.BORN_EVENT, eventData, new SendEventOptions { 
-            targetActorIds = new List<int> { player.ActorId }
+            TargetActorIds = new List<int> { player.ActorId }
         });
         // 告知其他玩家有新玩家加入
         var otherIds = new List<int>();
@@ -160,7 +160,7 @@ public class Master : MonoBehaviour {
             { "pId", player.ActorId }
         };
         client.SendEvent(Constants.PLAYER_JOINED_EVENT, eventData, new SendEventOptions {
-            targetActorIds = otherIds
+            TargetActorIds = otherIds
         });
     }
 }
