@@ -149,7 +149,7 @@ public class Battle : MonoBehaviour
     void OnRebornEvent(Dictionary<string, object> eventData) {
         var playerId = int.Parse(eventData["playerId"].ToString());
         var ball = IdToBalls[playerId];
-        ball.Reborn();
+        ball.SendMessage("Reborn");
         ui.UpdateList();
     }
 

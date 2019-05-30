@@ -36,7 +36,8 @@ public class Ball : MonoBehaviour
     }
 
     public void Lose() {
-        gameObject.SetActive(false);
+        var sprite = GetComponent<SpriteRenderer>();
+        sprite.enabled = false;
     }
 
     public void Reborn() {
@@ -45,7 +46,8 @@ public class Ball : MonoBehaviour
         var x = float.Parse(pos["x"].ToString());
         var y = float.Parse(pos["y"].ToString());
         transform.localPosition = new Vector2(x, y);
-        gameObject.SetActive(true);
+        var sprite = GetComponent<SpriteRenderer>();
+        sprite.enabled = true;
     }
 
     void UpdateScale() {

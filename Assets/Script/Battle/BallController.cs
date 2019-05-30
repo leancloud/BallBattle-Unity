@@ -89,4 +89,9 @@ public class BallController : MonoBehaviour
             };
         client.Player.SetCustomProperties(props);
     }
+
+    public void Reborn() {
+        var pos = transform.localPosition;
+        cameraTrans.localPosition = new Vector3(pos.x, pos.y, -10);
+    }
 }
