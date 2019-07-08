@@ -1,9 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using LeanCloud.Play;
 
-public class Ball : MonoBehaviour
+public class BallBeh : MonoBehaviour
 {
     public Player Player {
         get; set;
@@ -23,7 +21,7 @@ public class Ball : MonoBehaviour
 
     public int Weight { 
         get {
-            return int.Parse(Player.CustomProperties["weight"].ToString());
+            return Player.CustomProperties.GetInt("weight");
         }
     }
 
@@ -42,9 +40,9 @@ public class Ball : MonoBehaviour
 
     public void Reborn() {
         UpdateScale();
-        var pos = Player.CustomProperties["pos"] as Dictionary<string, object>;
-        var x = float.Parse(pos["x"].ToString());
-        var y = float.Parse(pos["y"].ToString());
+        var pos = Player.CustomProperties.Get<Vec2>("pos");
+        var x = pos.X;
+        var y = pos.Y;
         transform.localPosition = new Vector2(x, y);
         var sprite = GetComponent<SpriteRenderer>();
         sprite.enabled = true;
@@ -56,31 +54,28 @@ public class Ball : MonoBehaviour
     }
 
     void OnTriggerEnter2D(Collider2D other) {
-        Debug.Log("colide 2d something");
         var otherTag = other.tag;
         if (otherTag.Equals(Constants.FOOD_TAG)) {
-            var food = other.gameObject.GetComponent<Food>();
+            var food = other.gameObject.GetComponent<FoodBeh>();
             OnCollideFood(food);
         } else if (otherTag.Equals(Constants.BALL_TAG)) {
-            var ball = other.gameObject.GetComponent<Ball>();
+            var ball = other.gameObject.GetComponent<BallBeh>();
             OnCollideBall(ball);
         }
     }
 
-    void OnCollideFood(Food food) {
-        Debug.Log("collide food");
-        var args = new Dictionary<string, object> {
-            { "ball", this },
-            { "food", food }
+    void OnCollideFood(FoodBeh food) {
+        var args = new FoodCollisionArgs {
+            Ball = this,
+            FoodBeh = food
         };
         SendMessageUpwards(Constants.OnBallAndFoodCollision, args, SendMessageOptions.DontRequireReceiver);
     }
 
-    void OnCollideBall(Ball ball) {
-        Debug.Log("collide ball");
-        var args = new Dictionary<string, Ball> {
-            { "b1", this },
-            { "b2", ball },
+    void OnCollideBall(BallBeh ball) {
+        var args = new BallCollisionArgs { 
+            Ball1 = this,
+            Ball2 = ball
         };
         SendMessageUpwards(Constants.OnBallAndBallCollision, args, SendMessageOptions.DontRequireReceiver);
     }

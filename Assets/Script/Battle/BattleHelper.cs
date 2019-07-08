@@ -5,13 +5,10 @@ using System;
 
 public static class BattleHelper
 {
-    public static Dictionary<string, object> RandomPos() {
+    public static Vector2 RandomPos() {
         var x = Constants.LEFT + UnityEngine.Random.Range(0f, 1f) * Constants.WIDTH;
         var y = Constants.BOTTOM + UnityEngine.Random.Range(0f, 1f) * Constants.HEIGHT;
-        return new Dictionary<string, object> {
-            { "x", Math.Round(x, 1) },
-            { "y", Math.Round(y, 1) }
-        };
+        return new Vector2(Convert.ToSingle(Math.Round(x, 1)), Convert.ToSingle(Math.Round(y, 1)));
     }
 
     public static long Now {

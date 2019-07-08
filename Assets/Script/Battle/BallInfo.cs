@@ -8,7 +8,7 @@ public class BallInfo : MonoBehaviour
     public Text nameText;
     public Text coordinateText;
 
-    public Ball ball;
+    public BallBeh ball;
 
     Canvas canvas;
 

@@ -2,17 +2,18 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using LeanCloud.Play;
 
 public class BallController : MonoBehaviour
 {
     public Transform cameraTrans;
 
-    Ball ball;
+    BallBeh ball;
     int horizontal;
     int vertical;
     
     void Start() {
-        ball = GetComponent<Ball>();
+        ball = GetComponent<BallBeh>();
         horizontal = 0;
         vertical = 0;
         var pos = transform.localPosition;
@@ -84,7 +85,7 @@ public class BallController : MonoBehaviour
                 { "d", dir },
                 { "t", BattleHelper.Now }
             };
-        var props = new Dictionary<string, object> {
+        var props = new PlayObject {
                 { "move", move }
             };
         client.Player.SetCustomProperties(props);

@@ -24,7 +24,7 @@ public class UI : MonoBehaviour
         StartCoroutine(Tick());
     }
 
-    public void AddPlayerInfo(Ball ball) {
+    public void AddPlayerInfo(BallBeh ball) {
         var ballInfoGO = Instantiate(ballInfoTemplete);
         ballInfoGO.transform.parent = transform;
         var ballInfo = ballInfoGO.GetComponent<BallInfo>();
@@ -34,7 +34,7 @@ public class UI : MonoBehaviour
         NewPlayerInfoItem();
     }
 
-    public void RemovePlayerInfo(Ball ball) {
+    public void RemovePlayerInfo(BallBeh ball) {
         var playerInfoItem = playerInfoList[0];
         playerInfoList.RemoveAt(0);
         Destroy(playerInfoItem.gameObject);
@@ -48,14 +48,14 @@ public class UI : MonoBehaviour
         var client = LeanCloudUtils.GetClient();
         var playerList = client.Room.PlayerList;
         playerList.Sort((p1, p2) => {
-            var w1 = int.Parse(p1.CustomProperties["weight"].ToString());
-            var w2 = int.Parse(p2.CustomProperties["weight"].ToString());
+            var w1 = p1.CustomProperties.GetInt("weight");
+            var w2 = p2.CustomProperties.GetInt("weight");
             return w2 - w1;
         });
         for (int i = 0; i < playerList.Count; i++) {
             var player = playerList[i];
             var playerInfoItem = playerInfoList[i];
-            var weight = int.Parse(player.CustomProperties["weight"].ToString());
+            var weight = player.CustomProperties.GetInt("weight");
             playerInfoItem.SetInfo(i + 1, player.UserId, weight, player.IsLocal);
         }
     }
