@@ -2,31 +2,30 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 玩家模拟器，主要模拟运动
+/// </summary>
 public class BallSimulator : MonoBehaviour {
-    Ball ball;
+    BallBeh ball;
 
     void Start() {
-        ball = GetComponent<Ball>();
+        ball = GetComponent<BallBeh>();
         var player = ball.Player;
-        var pos = player.CustomProperties["pos"] as Dictionary<string, object>;
-        var x = float.Parse(pos["x"].ToString());
-        var y = float.Parse(pos["y"].ToString());
-        transform.localPosition = new Vector2(x, y);
+        var pos = player.CustomProperties.Get<Vec2>("pos");
+        transform.localPosition = new Vector2(pos.X, pos.Y);
     }
 
     void Update() {
-        if (ball.Player.CustomProperties.TryGetValue("move", out object m)) {
-            if (!(m is Dictionary<string, object> move)) {
-                return;
-            }
+        if (!ball.Player.CustomProperties.IsNull("move")) {
+            var move = ball.Player.CustomProperties.Get<Move>("move");
             // 计算当前位置
             var now = BattleHelper.Now;
             var speed = ball.Speed;
-            var delta = (now - long.Parse(move["t"].ToString())) / 1000.0f;
-            var pos = move["p"] as Dictionary<string, object>;
-            var start = new Vector2(float.Parse(pos["x"].ToString()), float.Parse(pos["y"].ToString()));
-            var dir = move["d"] as Dictionary<string, object>;
-            var direction = new Vector2(float.Parse(dir["x"].ToString()), float.Parse(dir["y"].ToString()));
+            var delta = (now - move.Time) / 1000.0f;
+            var pos = move.Pos;
+            var start = new Vector2(pos.X, pos.Y);
+            var dir = move.Dir;
+            var direction = new Vector2(dir.X, dir.Y);
             var end = start + direction.normalized * speed * delta;
             // 计算模拟运动
             var curPos = new Vector2(transform.localPosition.x, transform.localPosition.y);

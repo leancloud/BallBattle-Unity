@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class BallInfo : MonoBehaviour
+/// <summary>
+/// 玩家信息，包括名字，位置
+/// </summary>
+public class BallInfoBeh : MonoBehaviour
 {
     public Text nameText;
     public Text coordinateText;
 
-    public Ball ball;
+    public BallBeh ball;
 
     Canvas canvas;
 

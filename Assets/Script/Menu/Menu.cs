@@ -14,7 +14,6 @@ public class Menu : MonoBehaviour
             Debug.Log($"[{level}] {info}");
         };
         var canvas = GetComponent<Canvas>();
-        Debug.Log($"canvas camera: {canvas.worldCamera}");
     }
 
     public async void OnJoinBtnClicked() {
@@ -30,5 +29,12 @@ public class Menu : MonoBehaviour
         await client.JoinOrCreateRoom(roomId);
         client.PauseMessageQueue();
         SceneManager.LoadScene("Battle");
+    }
+
+    void OnApplicationQuit() {
+        var client = LeanCloudUtils.GetClient();
+        if (client != null) {
+            client.Close();
+        }
     }
 }

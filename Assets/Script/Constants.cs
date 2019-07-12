@@ -37,7 +37,7 @@ public static class Constants
 
     // 自定义通信事件
     // 玩家出生事件
-    public const byte BORN_EVENT = 0;
+    public const byte BORN_EVENT = 10;
     // 新玩家加入
     public const byte PLAYER_JOINED_EVENT = 7;
     // 吃食物

@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using LeanCloud.Play;
 
@@ -10,11 +9,11 @@ public class Battle : MonoBehaviour
     public UI ui;
     public Transform cameraTrans;
 
-    public Dictionary<int, Ball> IdToBalls {
+    public Dictionary<int, BallBeh> IdToBalls {
         get; set;
     }
 
-    public Dictionary<int, Food> IdToFoods {
+    public Dictionary<int, FoodBeh> IdToFoods {
         get; set;
     }
 
@@ -29,8 +28,8 @@ public class Battle : MonoBehaviour
     void Start() {
         Physics2D.gravity = Vector2.zero;
 
-        IdToBalls = new Dictionary<int, Ball>();
-        IdToFoods = new Dictionary<int, Food>();
+        IdToBalls = new Dictionary<int, BallBeh>();
+        IdToFoods = new Dictionary<int, FoodBeh>();
         var client = LeanCloudUtils.GetClient();
         if (client.Player.IsMaster) {
             var master = gameObject.AddComponent<Master>();
@@ -49,6 +48,13 @@ public class Battle : MonoBehaviour
         client.OnPlayerRoomLeft -= Client_OnPlayerRoomLeft;
     }
 
+    void OnApplicationQuit() {
+        var client = LeanCloudUtils.GetClient();
+        if (client != null) {
+            client.Close();
+        }
+    }
+
     void Client_OnMasterSwitched(Player newMaster) {
         if (newMaster.IsLocal) {
             // 当前客户端被设置为 Master
@@ -57,7 +63,7 @@ public class Battle : MonoBehaviour
         }
     }
 
-    void Client_OnCustomEvent(byte eventId, Dictionary<string, object> eventData, int senderId) {
+    void Client_OnCustomEvent(byte eventId, PlayObject eventData, int senderId) {
         switch (eventId) {
             case Constants.BORN_EVENT:
                 OnBornEvent(eventData);
@@ -92,7 +98,7 @@ public class Battle : MonoBehaviour
         }
     }
 
-    void OnBornEvent(Dictionary<string, object> eventData) {
+    void OnBornEvent(PlayObject eventData) {
         Debug.Log("on born event");
         var client = LeanCloudUtils.GetClient();
         // 初始化 UI
@@ -110,13 +116,13 @@ public class Battle : MonoBehaviour
         }
         ui.UpdateList();
         // 增加食物数据
-        var foods = eventData["foods"] as List<object>;
+        var foods = eventData.GetPlayArray("foods");
         SpawnFoods(foods);
     }
 
-    void OnPlayerJoinedEvent(Dictionary<string, object> eventData) {
+    void OnPlayerJoinedEvent(PlayObject eventData) {
         var client = LeanCloudUtils.GetClient();
-        var playerId = int.Parse(eventData["pId"].ToString());
+        var playerId = eventData.GetInt("pId");
         var player = client.Room.GetPlayer(playerId);
         // 实例化一个新球
         var ball = NewBall(player);
@@ -124,9 +130,9 @@ public class Battle : MonoBehaviour
         ui.UpdateList();
     }
 
-    void OnEatEvent(Dictionary<string, object> eventData) {
-        var ballId = int.Parse(eventData["pId"].ToString());
-        var foodId = int.Parse(eventData["fId"].ToString());
+    void OnEatEvent(PlayObject eventData) {
+        var ballId = eventData.GetInt("pId");
+        var foodId = eventData.GetInt("fId");
         var ball = IdToBalls[ballId];
         // 吃
         ball.Eat();
@@ -136,71 +142,66 @@ public class Battle : MonoBehaviour
         ui.UpdateList();
     }
 
-    void OnKillEvent(Dictionary<string, object> eventData) {
-        var winnerId = int.Parse(eventData["winnerId"].ToString());
+    void OnKillEvent(PlayObject eventData) {
+        var winnerId = eventData.GetInt("winnerId");
         var winner = IdToBalls[winnerId];
         winner.Win();
-        var loserId = int.Parse(eventData["loserId"].ToString());
+        var loserId = eventData.GetInt("loserId");
         var loser = IdToBalls[loserId];
         loser.Lose();
         ui.UpdateList();
     }
 
-    void OnRebornEvent(Dictionary<string, object> eventData) {
-        var playerId = int.Parse(eventData["playerId"].ToString());
+    void OnRebornEvent(PlayObject eventData) {
+        var playerId = eventData.GetInt("playerId");
         var ball = IdToBalls[playerId];
         ball.SendMessage("Reborn");
         ui.UpdateList();
     }
 
-    void OnPlayerLeftEvent(Dictionary<string, object> eventData) {
-        var playerId = int.Parse(eventData["playerId"].ToString());
+    void OnPlayerLeftEvent(PlayObject eventData) {
+        var playerId = eventData.GetInt("playerId");
         var ball = IdToBalls[playerId];
         Destroy(ball.gameObject);
         ui.RemovePlayerInfo(ball);
     }
 
-    void OnSpawnFoodEvent(Dictionary<string, object> eventData) {
-        var foods = eventData["foods"] as List<object>;
-        NextFoodId = int.Parse(eventData["nextFoodId"].ToString());
+    void OnSpawnFoodEvent(PlayObject eventData) {
+        var foods = eventData.GetPlayArray("foods");
+        NextFoodId = eventData.GetInt("nextFoodId");
         SpawnFoods(foods);
     }
 
-    void SpawnFoods(List<object> foods) {
+    void SpawnFoods(PlayArray foods) {
         // 实例化食物对象
-        foreach (Dictionary<string, object> foodData in foods) {
-            var id = int.Parse(foodData["id"].ToString());
-            var type = int.Parse(foodData["type"].ToString());
-            var x = float.Parse(foodData["x"].ToString());
-            var y = float.Parse(foodData["y"].ToString());
-            var foodGo = Instantiate(foodTemplates[type]);
+        foreach (Food foodData in foods) {
+            var foodGo = Instantiate(foodTemplates[foodData.Type]);
             foodGo.transform.parent = transform;
-            foodGo.transform.localPosition = new Vector3(x, y, 0);
-            var food = foodGo.GetComponent<Food>();
-            food.Id = id;
-            food.Type = type;
-            IdToFoods[id] = food;
+            foodGo.transform.localPosition = new Vector3(foodData.X, foodData.Y, 0);
+            var food = foodGo.GetComponent<FoodBeh>();
+            food.Data = foodData;
+            IdToFoods[foodData.Id] = food;
         }
     }
 
-    Ball NewBall(Player player) {
+    BallBeh NewBall(Player player) {
         var ballGO = Instantiate(ballTemplate);
         ballGO.transform.parent = transform;
-        var pos = player.CustomProperties["pos"] as Dictionary<string, object>;
-        var x = float.Parse(pos["x"].ToString());
-        var y = float.Parse(pos["y"].ToString());
+        var pos = player.CustomProperties.Get<Vec2>("pos");
+        var x = pos.X;
+        var y = pos.Y;
         ballGO.transform.localPosition = new Vector2(x, y);
-        var ball = ballGO.GetComponent<Ball>();
+        var ball = ballGO.GetComponent<BallBeh>();
         ball.Player = player;
         IdToBalls[player.ActorId] = ball;
         ui.AddPlayerInfo(ball);
         return ball;
     }
 
-    public List<object> GetFoods() {
-        var foods = new List<object>();
+    public PlayArray GetFoods() {
+        var foods = new PlayArray();
         foreach (var food in IdToFoods) {
-            foods.Add(food.Value.GetData());
+            foods.Add(food.Value.Data);
         }
         return foods;
     }

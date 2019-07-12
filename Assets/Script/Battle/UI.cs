@@ -15,26 +15,26 @@ public class UI : MonoBehaviour
 
     int duration;
     List<PlayerInfoItem> playerInfoList;
-    Dictionary<int, BallInfo> ballInfoDict;
+    Dictionary<int, BallInfoBeh> ballInfoDict;
 
     public void Init() {
         var client = LeanCloudUtils.GetClient();
         playerInfoList = new List<PlayerInfoItem>();
-        ballInfoDict = new Dictionary<int, BallInfo>();
+        ballInfoDict = new Dictionary<int, BallInfoBeh>();
         StartCoroutine(Tick());
     }
 
-    public void AddPlayerInfo(Ball ball) {
+    public void AddPlayerInfo(BallBeh ball) {
         var ballInfoGO = Instantiate(ballInfoTemplete);
         ballInfoGO.transform.parent = transform;
-        var ballInfo = ballInfoGO.GetComponent<BallInfo>();
+        var ballInfo = ballInfoGO.GetComponent<BallInfoBeh>();
         ballInfo.ball = ball;
         ballInfoDict.Add(ball.Id, ballInfo);
 
         NewPlayerInfoItem();
     }
 
-    public void RemovePlayerInfo(Ball ball) {
+    public void RemovePlayerInfo(BallBeh ball) {
         var playerInfoItem = playerInfoList[0];
         playerInfoList.RemoveAt(0);
         Destroy(playerInfoItem.gameObject);
@@ -48,15 +48,15 @@ public class UI : MonoBehaviour
         var client = LeanCloudUtils.GetClient();
         var playerList = client.Room.PlayerList;
         playerList.Sort((p1, p2) => {
-            var w1 = int.Parse(p1.CustomProperties["weight"].ToString());
-            var w2 = int.Parse(p2.CustomProperties["weight"].ToString());
-            return w2 - w1;
+            var w1 = p1.CustomProperties.GetFloat("weight");
+            var w2 = p2.CustomProperties.GetFloat("weight");
+            return (int)(w2 - w1);
         });
         for (int i = 0; i < playerList.Count; i++) {
             var player = playerList[i];
             var playerInfoItem = playerInfoList[i];
-            var weight = int.Parse(player.CustomProperties["weight"].ToString());
-            playerInfoItem.SetInfo(i + 1, player.UserId, weight, player.IsLocal);
+            var weight = player.CustomProperties.GetFloat("weight");
+            playerInfoItem.SetInfo(i + 1, player.UserId, (int)weight, player.IsLocal);
         }
     }
 

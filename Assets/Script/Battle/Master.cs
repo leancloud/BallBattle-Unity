@@ -11,8 +11,8 @@ public class Master : MonoBehaviour {
     /// </summary>
     public void InitGame() {
         battle = GetComponent<Battle>();
-        battle.IdToFoods = new Dictionary<int, Food>();
-        battle.IdToBalls = new Dictionary<int, Ball>();
+        battle.IdToFoods = new Dictionary<int, FoodBeh>();
+        battle.IdToBalls = new Dictionary<int, BallBeh>();
         // 初始化玩家
         var client = LeanCloudUtils.GetClient();
         NewPlayer(client.Player);
@@ -25,7 +25,7 @@ public class Master : MonoBehaviour {
     /// </summary>
     public void SwitchGame() {
         battle = GetComponent<Battle>();
-        // 开始定时生成小球
+        // 开始定时生成食物
         StartCoroutine(StartSpawnFoods());
     }
 
@@ -44,32 +44,32 @@ public class Master : MonoBehaviour {
         NewPlayer(player);
     }
 
-    void OnBallAndFoodCollision(Dictionary<string, object> args) {
-        var ball = args["ball"] as Ball;
-        var food = args["food"] as Food;
+    void OnBallAndFoodCollision(FoodCollisionArgs args) {
+        var ball = args.Ball;
+        var food = args.FoodBeh;
         food.gameObject.SetActive(false);
         // 增加体重
         var player = ball.Player;
-        var weight = int.Parse(player.CustomProperties["weight"].ToString()) + Constants.FOOD_WEIGHT;
-        var props = new Dictionary<string, object> {
+        var weight = player.CustomProperties.GetFloat("weight") + Constants.FOOD_WEIGHT;
+        var props = new PlayObject {
             { "weight", weight }
         };
         player.SetCustomProperties(props);
         // 通知事件
-        var eventData = new Dictionary<string, object> {
+        var eventData = new PlayObject {
             { "pId", player.ActorId },
-            { "fId", food.Id }
+            { "fId", food.Data.Id }
         };
         var client = LeanCloudUtils.GetClient();
         client.SendEvent(Constants.EAT_EVENT, eventData);
     }
 
-    void OnBallAndBallCollision(Dictionary<string, Ball> args) {
-        var ball1 = args["b1"];
-        var ball2 = args["b2"];
+    void OnBallAndBallCollision(BallCollisionArgs args) {
+        var ball1 = args.Ball1;
+        var ball2 = args.Ball2;
         // 判断胜负
-        var weight1 = int.Parse(ball1.Player.CustomProperties["weight"].ToString());
-        var weight2 = int.Parse(ball2.Player.CustomProperties["weight"].ToString());
+        var weight1 = ball1.Player.CustomProperties.GetFloat("weight");
+        var weight2 = ball2.Player.CustomProperties.GetFloat("weight");
         Player winner, loser;
         if (weight1 > weight2) {
             winner = ball1.Player;
@@ -79,26 +79,29 @@ public class Master : MonoBehaviour {
             loser = ball1.Player;
         }
         var winnerWeight = weight1 + weight2;
-        var props = new Dictionary<string, object> {
+        var props = new PlayObject {
             { "weight", winnerWeight }
         };
+        // 设置胜利方
         winner.SetCustomProperties(props);
-        var client = LeanCloudUtils.GetClient();
-        var eventData = new Dictionary<string, object> {
-            { "winnerId", winner.ActorId },
-            { "loserId", loser.ActorId }
-        };
-        client.SendEvent(Constants.KILL_EVENT, eventData);
         // 重置失败方
         var loserWeight = Mathf.Pow(Constants.BORN_SIZE, 2);
         var pos = BattleHelper.RandomPos();
-        props = new Dictionary<string, object> {
+        props = new PlayObject {
             { "pos", pos },
             { "weight", loserWeight },
             { "move", null }
         };
         loser.SetCustomProperties(props);
-        eventData = new Dictionary<string, object> {
+        // 通知胜负情况
+        var client = LeanCloudUtils.GetClient();
+        var eventData = new PlayObject {
+            { "winnerId", winner.ActorId },
+            { "loserId", loser.ActorId }
+        };
+        client.SendEvent(Constants.KILL_EVENT, eventData);
+        // 通知重生
+        eventData = new PlayObject {
             { "playerId", loser.ActorId }
         };
         client.SendEvent(Constants.REBORN_EVENT, eventData);
@@ -108,20 +111,20 @@ public class Master : MonoBehaviour {
         while (true) {
             var spawnFoodCount = Constants.INIT_FOOD_COUNT - battle.IdToFoods.Count;
             // 获取最大食物 id
-            var spawnFoods = new List<object>();
+            PlayArray spawnFoods = new PlayArray();
             var nextFoodId = battle.NextFoodId;
             for (int i = 0; i < spawnFoodCount; i++) {
                 var foodId = nextFoodId + i;
                 var foodPos = BattleHelper.RandomPos();
-                var food = new Dictionary<string, object> {
-                    { "id", foodId },
-                    { "type", i % 3 },
-                    { "x", float.Parse(foodPos["x"].ToString()) },
-                    { "y", float.Parse(foodPos["y"].ToString()) }
+                var food = new Food { 
+                    Id = foodId,
+                    Type = i % 3,
+                    X = foodPos.X,
+                    Y = foodPos.Y
                 };
                 spawnFoods.Add(food);
             }
-            var eventData = new Dictionary<string, object> {
+            var eventData = new PlayObject {
                 { "foods", spawnFoods },
                 { "nextFoodId", nextFoodId + spawnFoodCount }
             };
@@ -131,24 +134,24 @@ public class Master : MonoBehaviour {
         }
     }
 
-    void NewPlayer(Player player) {
+    async void NewPlayer(Player player) {
         var weight = Mathf.Pow(Constants.BORN_SIZE, 2);
         var pos = BattleHelper.RandomPos();
-        var props = new Dictionary<string, object> {
+        var props = new PlayObject {
             { "weight", weight },
             { "pos", pos }
         };
-        player.SetCustomProperties(props);
+        await player.SetCustomProperties(props);
         var client = LeanCloudUtils.GetClient();
         // 打包内存中的食物数据
         var foods = battle.GetFoods();
-        var eventData = new Dictionary<string, object> {
+        var eventData = new PlayObject {
             { "foods", foods }
         };
-        client.SendEvent(Constants.BORN_EVENT, eventData, new SendEventOptions { 
+        await client.SendEvent(Constants.BORN_EVENT, eventData, new SendEventOptions { 
             TargetActorIds = new List<int> { player.ActorId }
         });
-        // 告知其他玩家有新玩家加入
+        // 告知「其他玩家」有新玩家加入
         var otherIds = new List<int>();
         foreach (Player p in client.Room.PlayerList) { 
             if (p == player) {
@@ -156,10 +159,10 @@ public class Master : MonoBehaviour {
             }
             otherIds.Add(p.ActorId);
         }
-        eventData = new Dictionary<string, object> {
+        eventData = new PlayObject {
             { "pId", player.ActorId }
         };
-        client.SendEvent(Constants.PLAYER_JOINED_EVENT, eventData, new SendEventOptions {
+        await client.SendEvent(Constants.PLAYER_JOINED_EVENT, eventData, new SendEventOptions {
             TargetActorIds = otherIds
         });
     }
