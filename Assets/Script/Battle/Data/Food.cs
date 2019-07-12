@@ -1,5 +1,8 @@
 ﻿using LeanCloud.Play;
 
+/// <summary>
+/// 食物数据
+/// </summary>
 public class Food {
     public int Id {
         get; set;

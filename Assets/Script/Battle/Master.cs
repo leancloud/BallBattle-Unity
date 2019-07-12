@@ -25,7 +25,7 @@ public class Master : MonoBehaviour {
     /// </summary>
     public void SwitchGame() {
         battle = GetComponent<Battle>();
-        // 开始定时生成小球
+        // 开始定时生成食物
         StartCoroutine(StartSpawnFoods());
     }
 
@@ -50,7 +50,7 @@ public class Master : MonoBehaviour {
         food.gameObject.SetActive(false);
         // 增加体重
         var player = ball.Player;
-        var weight = player.CustomProperties.GetInt("weight") + Constants.FOOD_WEIGHT;
+        var weight = player.CustomProperties.GetFloat("weight") + Constants.FOOD_WEIGHT;
         var props = new PlayObject {
             { "weight", weight }
         };
@@ -68,8 +68,8 @@ public class Master : MonoBehaviour {
         var ball1 = args.Ball1;
         var ball2 = args.Ball2;
         // 判断胜负
-        var weight1 = ball1.Player.CustomProperties.GetInt("weight");
-        var weight2 = ball2.Player.CustomProperties.GetInt("weight");
+        var weight1 = ball1.Player.CustomProperties.GetFloat("weight");
+        var weight2 = ball2.Player.CustomProperties.GetFloat("weight");
         Player winner, loser;
         if (weight1 > weight2) {
             winner = ball1.Player;
@@ -82,13 +82,8 @@ public class Master : MonoBehaviour {
         var props = new PlayObject {
             { "weight", winnerWeight }
         };
+        // 设置胜利方
         winner.SetCustomProperties(props);
-        var client = LeanCloudUtils.GetClient();
-        var eventData = new PlayObject {
-            { "winnerId", winner.ActorId },
-            { "loserId", loser.ActorId }
-        };
-        client.SendEvent(Constants.KILL_EVENT, eventData);
         // 重置失败方
         var loserWeight = Mathf.Pow(Constants.BORN_SIZE, 2);
         var pos = BattleHelper.RandomPos();
@@ -98,6 +93,14 @@ public class Master : MonoBehaviour {
             { "move", null }
         };
         loser.SetCustomProperties(props);
+        // 通知胜负情况
+        var client = LeanCloudUtils.GetClient();
+        var eventData = new PlayObject {
+            { "winnerId", winner.ActorId },
+            { "loserId", loser.ActorId }
+        };
+        client.SendEvent(Constants.KILL_EVENT, eventData);
+        // 通知重生
         eventData = new PlayObject {
             { "playerId", loser.ActorId }
         };
@@ -116,8 +119,8 @@ public class Master : MonoBehaviour {
                 var food = new Food { 
                     Id = foodId,
                     Type = i % 3,
-                    X = foodPos.x,
-                    Y = foodPos.y
+                    X = foodPos.X,
+                    Y = foodPos.Y
                 };
                 spawnFoods.Add(food);
             }
@@ -131,24 +134,24 @@ public class Master : MonoBehaviour {
         }
     }
 
-    void NewPlayer(Player player) {
+    async void NewPlayer(Player player) {
         var weight = Mathf.Pow(Constants.BORN_SIZE, 2);
         var pos = BattleHelper.RandomPos();
         var props = new PlayObject {
             { "weight", weight },
             { "pos", pos }
         };
-        player.SetCustomProperties(props);
+        await player.SetCustomProperties(props);
         var client = LeanCloudUtils.GetClient();
         // 打包内存中的食物数据
         var foods = battle.GetFoods();
         var eventData = new PlayObject {
             { "foods", foods }
         };
-        client.SendEvent(Constants.BORN_EVENT, eventData, new SendEventOptions { 
+        await client.SendEvent(Constants.BORN_EVENT, eventData, new SendEventOptions { 
             TargetActorIds = new List<int> { player.ActorId }
         });
-        // 告知其他玩家有新玩家加入
+        // 告知「其他玩家」有新玩家加入
         var otherIds = new List<int>();
         foreach (Player p in client.Room.PlayerList) { 
             if (p == player) {
@@ -159,7 +162,7 @@ public class Master : MonoBehaviour {
         eventData = new PlayObject {
             { "pId", player.ActorId }
         };
-        client.SendEvent(Constants.PLAYER_JOINED_EVENT, eventData, new SendEventOptions {
+        await client.SendEvent(Constants.PLAYER_JOINED_EVENT, eventData, new SendEventOptions {
             TargetActorIds = otherIds
         });
     }

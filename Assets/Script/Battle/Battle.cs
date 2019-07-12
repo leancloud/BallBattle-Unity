@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using LeanCloud.Play;
 
@@ -47,6 +46,13 @@ public class Battle : MonoBehaviour
         client.OnMasterSwitched -= Client_OnMasterSwitched;
         client.OnCustomEvent -= Client_OnCustomEvent;
         client.OnPlayerRoomLeft -= Client_OnPlayerRoomLeft;
+    }
+
+    void OnApplicationQuit() {
+        var client = LeanCloudUtils.GetClient();
+        if (client != null) {
+            client.Close();
+        }
     }
 
     void Client_OnMasterSwitched(Player newMaster) {

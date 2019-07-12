@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 玩家模拟器，主要模拟运动
+/// </summary>
 public class BallSimulator : MonoBehaviour {
     BallBeh ball;
 
@@ -13,7 +16,7 @@ public class BallSimulator : MonoBehaviour {
     }
 
     void Update() {
-        if (ball.Player.CustomProperties.ContainsKey("move")) {
+        if (!ball.Player.CustomProperties.IsNull("move")) {
             var move = ball.Player.CustomProperties.Get<Move>("move");
             // 计算当前位置
             var now = BattleHelper.Now;

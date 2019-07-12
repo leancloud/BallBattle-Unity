@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using LeanCloud.Play;
 
+/// <summary>
+/// 玩家控制器
+/// </summary>
 public class BallController : MonoBehaviour
 {
     public Transform cameraTrans;
@@ -72,22 +75,22 @@ public class BallController : MonoBehaviour
 
     void SynchMove() {
         var client = LeanCloudUtils.GetClient();
-        var pos = new Dictionary<string, object> {
-                { "x", transform.localPosition.x },
-                { "y", transform.localPosition.y }
-            };
-        var dir = new Dictionary<string, object> {
-                { "x", horizontal },
-                { "y", vertical }
-            };
-        var move = new Dictionary<string, object> {
-                { "p", pos },
-                { "d", dir },
-                { "t", BattleHelper.Now }
-            };
+        var pos = new Vec2 {
+            X = transform.localPosition.x,
+            Y = transform.localPosition.y
+        };
+        var dir = new Vec2 { 
+            X = horizontal,
+            Y = vertical
+        };
+        var move = new Move {
+            Pos = pos,
+            Dir = dir,
+            Time = BattleHelper.Now
+        };
         var props = new PlayObject {
-                { "move", move }
-            };
+            { "move", move }
+        };
         client.Player.SetCustomProperties(props);
     }
 

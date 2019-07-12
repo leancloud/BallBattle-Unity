@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 6388812110471589919}
   - component: {fileID: 1390900430551996042}
   - component: {fileID: 6309081611366071265}
-  - component: {fileID: 4212537042059057738}
   m_Layer: 0
   m_Name: TriangleFood
   m_TagString: food
@@ -119,27 +118,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 6082385561262587599}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f377014023f1c4261b67d89a09862a25, type: 3}
+  m_Script: {fileID: 11500000, guid: a87104575a8ca4ad3ae11af7a711680b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!50 &4212537042059057738
-Rigidbody2D:
-  serializedVersion: 4
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6082385561262587599}
-  m_BodyType: 0
-  m_Simulated: 1
-  m_UseFullKinematicContacts: 0
-  m_UseAutoMass: 0
-  m_Mass: 1
-  m_LinearDrag: 0
-  m_AngularDrag: 0.05
-  m_GravityScale: 1
-  m_Material: {fileID: 0}
-  m_Interpolate: 0
-  m_SleepingMode: 1
-  m_CollisionDetection: 0
-  m_Constraints: 0

@@ -13,6 +13,10 @@ public static class LeanCloudUtils
         CodecUtils.RegisterType(typeof(Move), 3, Move.Serialize, Move.Deserialize);
         CodecUtils.RegisterType(typeof(Vec2), 4, Vec2.Serialize, Vec2.Deserialize);
         client = new Client("vAGmhiMWKL36JMXdepqx3sgV-gzGzoHsz", "Gt9CnVkM20XGFkAFkEkCKULE", userId);
+        //client = new Client("FQr8l8LLvdxIwhMHN77sNluX-9Nh9j0Va", "MJSm46Uu6LjF5eNmqfbuUmt6", userId);
+        client.OnPlayerCustomPropertiesChanged += (player, changedProps) => {
+            Debug.Log(changedProps);
+        };
         return client;
     }
 

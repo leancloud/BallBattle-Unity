@@ -2,13 +2,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using LeanCloud.Play;
 
 public static class BattleHelper
 {
-    public static Vector2 RandomPos() {
+    public static Vec2 RandomPos() {
         var x = Constants.LEFT + UnityEngine.Random.Range(0f, 1f) * Constants.WIDTH;
         var y = Constants.BOTTOM + UnityEngine.Random.Range(0f, 1f) * Constants.HEIGHT;
-        return new Vector2(Convert.ToSingle(Math.Round(x, 1)), Convert.ToSingle(Math.Round(y, 1)));
+        return new Vec2 { 
+            X = Convert.ToSingle(Math.Round(x, 1)),
+            Y = Convert.ToSingle(Math.Round(y, 1))
+        };
     }
 
     public static long Now {

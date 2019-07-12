@@ -1,6 +1,9 @@
 ﻿using UnityEngine;
 using LeanCloud.Play;
 
+/// <summary>
+/// Ball beh.
+/// </summary>
 public class BallBeh : MonoBehaviour
 {
     public Player Player {
@@ -19,9 +22,9 @@ public class BallBeh : MonoBehaviour
         }
     }
 
-    public int Weight { 
+    public float Weight { 
         get {
-            return Player.CustomProperties.GetInt("weight");
+            return Player.CustomProperties.GetFloat("weight");
         }
     }
 
@@ -36,14 +39,14 @@ public class BallBeh : MonoBehaviour
     public void Lose() {
         var sprite = GetComponent<SpriteRenderer>();
         sprite.enabled = false;
+        var pos = Player.CustomProperties.Get<Vec2>("pos");
+        transform.localPosition = new Vector2(pos.X, pos.Y);
     }
 
     public void Reborn() {
         UpdateScale();
         var pos = Player.CustomProperties.Get<Vec2>("pos");
-        var x = pos.X;
-        var y = pos.Y;
-        transform.localPosition = new Vector2(x, y);
+        transform.localPosition = new Vector2(pos.X, pos.Y);
         var sprite = GetComponent<SpriteRenderer>();
         sprite.enabled = true;
     }

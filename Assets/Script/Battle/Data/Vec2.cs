@@ -1,5 +1,8 @@
 ﻿using LeanCloud.Play;
 
+/// <summary>
+/// 二维向量
+/// </summary>
 public class Vec2 {
     public float X {
         get; set;

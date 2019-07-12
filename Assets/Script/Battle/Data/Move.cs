@@ -1,5 +1,8 @@
 ﻿using LeanCloud.Play;
 
+/// <summary>
+/// 移动数据
+/// </summary>
 public class Move {
     public Vec2 Pos {
         get; set;
