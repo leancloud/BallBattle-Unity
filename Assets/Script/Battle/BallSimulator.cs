@@ -16,12 +16,13 @@ public class BallSimulator : MonoBehaviour {
     }
 
     void Update() {
-        if (!ball.Player.CustomProperties.IsNull("move")) {
-            var move = ball.Player.CustomProperties.Get<Move>("move");
+        var props = ball.Player.CustomProperties;
+        if (props.ContainsKey("move") && !props.IsNull("move")) {
+            var move = props.Get<Move>("move");
             // 计算当前位置
             var now = BattleHelper.Now;
-            var speed = ball.Speed;
-            var delta = (now - move.Time) / 1000.0f;
+                var speed = ball.Speed;
+                var delta = (now - move.Time) / 1000.0f;
             var pos = move.Pos;
             var start = new Vector2(pos.X, pos.Y);
             var dir = move.Dir;
